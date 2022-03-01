@@ -14,4 +14,5 @@
 
 
 /out/.gitignore
+/.idea/.gitignore
 *.class
