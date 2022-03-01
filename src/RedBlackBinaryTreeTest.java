@@ -276,35 +276,46 @@ public class RedBlackBinaryTreeTest {
         assertEquals("B", stringTree.root().data);
     }
 
-
-  /*  @Test
-    public void testIsItearble() {
-        for (String s : list)
-            // This code is not necessay but removes a warning that s isn't
-            // used.
-            s.length();
-    }
-
     @Test
     public void testBasicIteration() {
-        Iterator<String> i = list.iterator();
+        Iterator<Integer> i = tree.iterator();
         assertTrue(i.hasNext());
-        assertEquals("First", i.next());
+        assertEquals(1, i.next());
         assertTrue(i.hasNext());
-        assertEquals("Second", i.next());
+        assertEquals(2, i.next());
         assertTrue(i.hasNext());
-        assertEquals("Third", i.next());
+        assertEquals(3, i.next());
         assertTrue(i.hasNext());
-        assertEquals("Fourth", i.next());
+        assertEquals(4, i.next());
         assertTrue(i.hasNext());
-        assertEquals("Fifth", i.next());
+        assertEquals(5, i.next());
+        assertTrue(i.hasNext());
+        assertEquals(6, i.next());
         assertFalse(i.hasNext());
     }
 
     @Test
+    public void testBasicDescendingIteration() {
+        Iterator<Integer> i = tree.descendingIterator();
+        assertTrue(i.hasNext());
+        assertEquals(6, i.next());
+        assertTrue(i.hasNext());
+        assertEquals(5, i.next());
+        assertTrue(i.hasNext());
+        assertEquals(4, i.next());
+        assertTrue(i.hasNext());
+        assertEquals(3, i.next());
+        assertTrue(i.hasNext());
+        assertEquals(2, i.next());
+        assertTrue(i.hasNext());
+        assertEquals(1, i.next());
+        assertFalse(i.hasNext());
+    }
+
+   @Test
     public void testToLongIteration() {
-        Iterator<String> i = list.iterator();
-        for (int n = 0; n < list.size(); n++) {
+        Iterator<Integer> i = tree.iterator();
+        for (int n = 0; n < tree.size(); n++) {
             i.next();
         }
         assertThrows(NoSuchElementException.class, () -> {
@@ -314,8 +325,8 @@ public class RedBlackBinaryTreeTest {
 
     @Test
     public void testIterationOnEmptyList() {
-        list.clear();
-        Iterator<String> i = list.iterator();
+        tree.clear();
+        Iterator<Integer> i = tree.iterator();
         assertFalse(i.hasNext());
         assertThrows(NoSuchElementException.class, () -> {
             i.next();
@@ -324,49 +335,83 @@ public class RedBlackBinaryTreeTest {
 
     @Test
     public void testMultipleConcurrentIterators() {
-        Iterator<String> i1 = list.iterator();
+        Iterator<Integer> i1 = tree.iterator();
         assertTrue(i1.hasNext());
-        assertEquals("First", i1.next());
-        assertEquals("Second", i1.next());
-        Iterator<String> i2 = list.iterator();
+        assertEquals(1, i1.next());
+        assertEquals(2, i1.next());
+        Iterator<Integer> i2 = tree.iterator();
         assertTrue(i2.hasNext());
-        assertEquals("First", i2.next());
-        assertEquals("Third", i1.next());
-        assertEquals("Second", i2.next());
-        assertEquals("Fourth", i1.next());
-        assertEquals("Third", i2.next());
-        assertEquals("Fourth", i2.next());
-        assertEquals("Fifth", i2.next());
-        assertEquals("Fifth", i1.next());
+        assertEquals(1, i2.next());
+        assertEquals(3, i1.next());
+        assertEquals(2, i2.next());
+        assertEquals(4, i1.next());
+        assertEquals(3, i2.next());
+        assertEquals(4, i2.next());
+        assertEquals(5, i2.next());
+        assertEquals(5, i1.next());
+        assertEquals(6, i2.next());
+        assertEquals(6, i1.next());
         assertFalse(i1.hasNext());
         assertFalse(i2.hasNext());
     }
 
     @Test
     public void testRemoveOnIterator() {
-        Iterator<String> i = list.iterator();
-        assertEquals("First", i.next());
+        Iterator<Integer> i = tree.iterator();
+        assertEquals(1, i.next());
         i.remove();
-        assertEquals(4, list.size());
-        assertEquals("Second", list.get(0));
-        assertEquals("Second", i.next());
-        assertEquals("Third", i.next());
+        assertEquals(5, tree.size());
+        assertEquals(2, tree.first());
+        assertEquals(2, i.next());
+        assertEquals(3, i.next());
         i.remove();
-        assertEquals(3, list.size());
-        assertEquals("Second", list.get(0));
-        assertEquals("Fourth", list.get(1));
-        assertEquals("Fourth", i.next());
-        assertEquals("Fifth", i.next());
+        assertEquals(4, tree.size());
+        assertEquals(2, tree.first());
+        //assertEquals(4, list.get(1));
+        assertEquals(4, i.next());
+        assertEquals(5, i.next());
         i.remove();
+        System.out.println(tree);
         //System.out.println(list.toString());
-        assertEquals(2, list.size());
-        assertEquals("Second", list.get(0));
-        assertEquals("Fourth", list.get(1));
+        assertEquals(3, tree.size());
+        assertEquals(2, tree.first());
+        assertEquals(6, i.next());
+        i.remove();
+        assertEquals(2, tree.size());
+        assertEquals(4, tree.last());
+        //assertEquals("Fourth", list.get(1));
+    }
+
+    @Test
+    public void testRemoveOnDescendingIterator() {
+        Iterator<Integer> i = tree.descendingIterator();
+        assertEquals(6, i.next());
+        i.remove();
+        assertEquals(5, tree.size());
+        assertEquals(5, tree.last());
+        assertEquals(5, i.next());
+        assertEquals(4, i.next());
+        i.remove();
+        assertEquals(4, tree.size());
+        assertEquals(5, tree.last());
+        //assertEquals(4, list.get(1));
+        assertEquals(3, i.next());
+        assertEquals(2, i.next());
+        i.remove();
+        //System.out.println(tree.toString());
+        assertEquals(3, tree.size());
+        assertEquals(5, tree.last());
+        assertEquals(1, i.next());
+        i.remove();
+
+        assertEquals(2, tree.size());
+        assertEquals(3, tree.first());
+        //assertEquals("Fourth", list.get(1));
     }
 
     @Test
     public void testRemoveOnIteratorWithoutNext() {
-        Iterator<String> i = list.iterator();
+        Iterator<Integer> i = tree.iterator();
         assertThrows(IllegalStateException.class, () -> {
             i.remove();
         });
@@ -374,12 +419,43 @@ public class RedBlackBinaryTreeTest {
 
     @Test
     public void testRemoveOnIteratorTwice() {
-        Iterator<String> i = list.iterator();
+        Iterator<Integer> i = tree.iterator();
         i.next();
         i.remove();
         assertThrows(IllegalStateException.class, () -> {
             i.remove();
         });
     }
-*/
+
+    @Test
+    public void testRemoveAllElementsOnIterator() {
+        Iterator<Integer> i = tree.iterator();
+        while (i.hasNext()){
+            i.next();
+            i.remove();
+        }
+        assertThrows(IllegalStateException.class, () -> {
+            i.remove();
+        });
+        assertTrue(tree.isEmpty());
+        assertEquals(0, tree.size());
+
+    }
+
+    @Test
+    public void testRemoveAllElementsOnDescendingIterator() {
+        Iterator<Integer> i = tree.descendingIterator();
+        while (i.hasNext()){
+            i.next();
+            i.remove();
+        }
+        assertThrows(IllegalStateException.class, () -> {
+            i.remove();
+        });
+        assertTrue(tree.isEmpty());
+        assertEquals(0, tree.size());
+
+    }
+
+
 }

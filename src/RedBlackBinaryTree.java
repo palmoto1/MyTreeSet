@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
  */
 
 
-public class RedBlackBinaryTree<T extends Comparable<? super T>> {
+public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iterable<T> {
 
 
     /**
@@ -39,15 +39,19 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
 
 
         //Constructors
-        Node(T data) {
-            this(data, null, null);
-        }
 
         Node(T data, Node<T> left, Node<T> right) {
             this.data = data;
             this.left = left;
             this.right = right;
             color = Color.RED;
+        }
+
+
+        Node() {
+            left = right = parent =
+                    nextLargest = nextSmallest = this;
+            color = Color.BLACK;
         }
 
 
@@ -101,7 +105,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
 
         public String toString() {
             return "(" +
-                    data.toString() + ": " + color + ", " +
+                    data + ": " + color + ", " +
                     "Parent: " + (parent == null ? "null" : parent.data) + ", " +
                     "Left: " + (left.data == null ? "nil" : left.data) + ", " +
                     "Right: " + (right.data == null ? "nil" : right.data) + ")";
@@ -110,30 +114,14 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
     }
 
 
+    private final Node<T> nil = new Node<>(); // deafault black node that every leaf has a pointer to
     private Node<T> root;
-    private final Node<T> nil; // deafault black node that every leaf has a pointer to
 
     private int size = 0;
     private int modCount = 0;
 
-    /**
-     * Constructor - initialize the nil node
-     */
-
-    public RedBlackBinaryTree() {
-        nil = new Node<>(null);
-        nil.left = nil.right = nil;
-        nil.parent = nil;
-
-        // nil nodes are black
-        nil.recolor();
-    }
-
 
     public boolean add(T data) {
-        if (data == null)
-            return false;
-
         int originalSize = size();
         if (insert(data)) {
             size++;
@@ -198,6 +186,9 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
 
 
     private boolean insert(T data) {
+        if (data == null)
+            return false;
+
         Node<T> node = new Node<>(data, nil, nil);
 
         // if the tree is empty we make the new node the root
@@ -227,21 +218,22 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
     private void insertUpdateNextNodes(Node<T> node) {
         if (node.isRoot()) {
             node.nextLargest = node.nextSmallest = nil;
+
         } else if (node.isLeftChild()) {
             node.nextLargest = node.parent;
             node.nextSmallest = node.parent.nextSmallest;
-            node.parent.nextSmallest.nextLargest = node.parent.nextSmallest != nil ? node : nil;
+            node.parent.nextSmallest.nextLargest = node;
             node.parent.nextSmallest = node;
+
         } else {
             node.nextSmallest = node.parent;
             node.nextLargest = node.parent.nextLargest;
-            node.parent.nextLargest.nextSmallest = node.parent.nextLargest != nil ? node : nil;
+            node.parent.nextLargest.nextSmallest = node;
             node.parent.nextLargest = node;
         }
     }
 
 
-    //TODO: write better how it works
 
     private void balanceInsertion(Node<T> node) {
 
@@ -307,7 +299,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
 
     //TODO: write better how it works
     private boolean delete(T data) {
-        if (isEmpty())
+        if (data == null || isEmpty())
             return false;
 
         // find node to be deleted
@@ -350,8 +342,8 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
     }
 
     private void deleteUpdateNextNodes(Node<T> node) {
-        node.nextSmallest.nextLargest = node.nextSmallest != nil ? node.nextLargest : nil;
-        node.nextLargest.nextSmallest = node.nextLargest != nil ? node.nextSmallest : nil;
+        node.nextSmallest.nextLargest = node.nextLargest;
+        node.nextLargest.nextSmallest = node.nextSmallest;
     }
 
     private void deleteCase1(Node<T> node) {
@@ -561,17 +553,12 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
     }
 
 
-    //for JUNIT tests
-    protected Node<T> root() {
-        return root;
-    }
-
-
     private class RedBlackTreeIterator implements Iterator<T> {
 
         private final boolean descending;
 
         private Node<T> current;
+
         private int expectedModCount = modCount;
         private boolean okToRemove;
 
@@ -580,15 +567,17 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
         }
 
         RedBlackTreeIterator(boolean descending) {
-            current = new Node<>(null, nil, nil);
-            current.nextLargest = findMinNode(root);
-            current.nextSmallest = findMaxNode(root);
             this.descending = descending;
+            if (isEmpty())
+                current = nil;
+            else
+                current = descending ? findMaxNode(root) : findMinNode(root);
+
         }
 
         @Override
         public boolean hasNext() {
-            return descending ? current.nextSmallest != nil : current.nextLargest != nil;
+            return current != nil;
         }
 
         @Override
@@ -597,9 +586,8 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
                 throw new ConcurrentModificationException();
             if (!hasNext())
                 throw new NoSuchElementException();
-            current = descending ? current.nextSmallest : current.nextLargest;
-
             T data = current.data;
+            current = descending ? current.nextSmallest : current.nextLargest;
             okToRemove = true;
 
             return data;
@@ -612,13 +600,15 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> {
             if (!okToRemove)
                 throw new IllegalStateException();
 
-            //removes the current node by resetting the "next node" of the previous node
-            RedBlackBinaryTree.this.remove(current.data);
+            RedBlackBinaryTree.this.remove(descending ? current.nextLargest.data : current.nextSmallest.data);
 
-            current = descending ? current.nextLargest : current.nextSmallest;
             expectedModCount++;
             okToRemove = false;
-
         }
+    }
+
+    //only for JUNIT-tests
+    protected Node<T> root() {
+        return root;
     }
 }

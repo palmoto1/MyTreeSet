@@ -20,26 +20,32 @@ public class Main {
 
         tree.add(1);
 
-        tree.add(8);
 
-        tree.add(7);
 
-        tree.add(10);
+        //tree.remove(5);
 
-        tree.add(18);
+        //tree.remove(7);
 
-        tree.add(17);
+        //tree.remove(2);
 
-        tree.remove(5);
+        Iterator<Integer> it = tree.iterator();
 
-        tree.remove(7);
+        System.out.println(it.next());
+        it.remove();
+        System.out.println(it.next());
+        it.remove();
+        System.out.println(it.next());
+        it.remove();
+        System.out.println(it.next());
+        it.remove();
+        System.out.println(it.next());
+        it.remove();
+        System.out.println(it.next());
+        it.remove();
 
-        tree.remove(2);
-
-        Iterator<Integer> it = tree.descendingIterator();
-
-        while (it.hasNext())
-            System.out.print(it.next() + " ");
+       /* while (it.hasNext())
+            //if (it.next() == 5)
+            System.out.print(it.next() + " ");*/
 
         //tree.remove(8);
 
@@ -110,7 +116,7 @@ public class Main {
 
 
 
-        System.out.println(tree.toString());
+        //System.out.println(tree.toString());
 
 
 
