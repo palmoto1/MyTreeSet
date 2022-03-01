@@ -1,8 +1,11 @@
 # Default ignored files
 
-/shelf/
 *.iml
 *.xml
+*.class
+
+/shelf/
+
 # Datasource local storage ignored files
 /../../../../../:\Users\augus\MyTreeSet\.idea/dataSources/
 /dataSources.local.xml
@@ -10,5 +13,5 @@
 /httpRequests/
 
 
-/out/production/MyTreeSet/
+/out/.gitignore
 *.class
