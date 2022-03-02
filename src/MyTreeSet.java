@@ -7,16 +7,12 @@ import java.util.*;
  * @author August Johnson Palm
  */
 
+//TODO: javadocs, implement relevant methods, clean up
 
-// TODO: kommentera/dokumentera vad som händer i koden
 public class MyTreeSet<T extends Comparable<? super T>> implements NavigableSet<T> {
 
-    private final RedBlackBinaryTree<T> tree;
+    private final RedBlackBinaryTree<T> tree = new RedBlackBinaryTree<>();;
 
-
-    public MyTreeSet() {
-        tree = new RedBlackBinaryTree<>();
-    }
 
 
     @Override
@@ -41,12 +37,16 @@ public class MyTreeSet<T extends Comparable<? super T>> implements NavigableSet<
 
     @Override
     public T pollFirst() {
-        return null;
+        T result = tree.first();
+        tree.remove(result);
+        return result;
     }
 
     @Override
     public T pollLast() {
-        return null;
+        T result = tree.last();
+        tree.remove(result);
+        return result;
     }
 
     @Override
@@ -61,9 +61,7 @@ public class MyTreeSet<T extends Comparable<? super T>> implements NavigableSet<
 
     @Override
     public boolean contains(Object o) {
-        if (isEmpty())
-            return false;
-        return false;
+        return tree.contains((T)o);
     }
 
     @Override
@@ -73,7 +71,14 @@ public class MyTreeSet<T extends Comparable<? super T>> implements NavigableSet<
 
     @Override
     public Object[] toArray() {
-        return new Object[0];
+        Iterator<T> i = tree.iterator();
+        Object[] arr = new Object[tree.size()];
+        int j = 0;
+        while (i.hasNext()) {
+            arr[j] = i;
+            j++;
+        }
+        return arr;
     }
 
     @Override
@@ -90,7 +95,7 @@ public class MyTreeSet<T extends Comparable<? super T>> implements NavigableSet<
 
     @Override
     public boolean remove(Object o) {
-        return false;
+        return tree.remove((T)o);
     }
 
     @Override

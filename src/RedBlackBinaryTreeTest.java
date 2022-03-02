@@ -11,11 +11,10 @@ import org.junit.jupiter.api.*;
  */
 
 
-//TODO: add more complicated scenarios of insertion and deletion
+//TODO: add more tests
 
 public class RedBlackBinaryTreeTest {
 
-    private static final RedBlackBinaryTree.Color RED = RedBlackBinaryTree.Color.RED;
     private static final RedBlackBinaryTree.Color BLACK = RedBlackBinaryTree.Color.BLACK;
 
     private final RedBlackBinaryTree<Integer> tree = new RedBlackBinaryTree<>();
@@ -62,7 +61,7 @@ public class RedBlackBinaryTreeTest {
 
     void verifyNodesAreEitherRedOrBlack(RedBlackBinaryTree.Node<Integer> root) throws IllegalStateException {
         if (root != null && root.data != null) {
-            if (root.color != RedBlackBinaryTree.Color.BLACK && root.color != RedBlackBinaryTree.Color.RED)
+            if (!root.isBlack() && !root.isRed())
                 throw new IllegalStateException("Wrong colors in tree");
             verifyNodesAreEitherRedOrBlack(root.left);
             verifyNodesAreEitherRedOrBlack(root.right);
@@ -71,9 +70,9 @@ public class RedBlackBinaryTreeTest {
 
     void verifyRedNodesHaveOnlyBlackChildren(RedBlackBinaryTree.Node<Integer> root) throws IllegalStateException {
         if (root != null && root.data != null) {
-            if (root.parent != null && root.color == RED && root.parent.color == RED)
+            if (root.parent != null && root.isRed() && root.parent.isRed())
                 throw new IllegalStateException("Adjecent red nodes");
-            if (root.color == RED && (root.left.color == RED || root.right.color == RED))
+            if (root.isRed() && (root.left.isRed() || root.right.isRed()))
                 throw new IllegalStateException("Adjecent red nodes");
 
             verifyRedNodesHaveOnlyBlackChildren(root.left);
@@ -87,21 +86,19 @@ public class RedBlackBinaryTreeTest {
 
     void verifySameNumberOfBlackNodesDownToAllNilNodes(RedBlackBinaryTree.Node<Integer> root, int expected, int count) throws IllegalStateException {
         if (root != null && root.data != null) {
-            count += root.color == BLACK ? 1 : 0;
+            if (root.isBlack())
+                count++;
             verifySameNumberOfBlackNodesDownToAllNilNodes(root.left, expected, count);
             verifySameNumberOfBlackNodesDownToAllNilNodes(root.right, expected, count);
-        } else {
-            if (expected != count)
+        } else if (expected != count)
                 throw new IllegalStateException("Wrong number of black nodes down to nil");
-        }
     }
 
     int numberOfBlackNodesToMinNodeFromAnyNode(RedBlackBinaryTree.Node<Integer> root) {
         int count = 0;
         while (root != null && root.data != null) {
-            if (root.color == BLACK) {
+            if (root.isBlack())
                 count++;
-            }
             root = root.left;
         }
         return count;
@@ -111,9 +108,8 @@ public class RedBlackBinaryTreeTest {
     int numberOfBlackNodesToMaxNodeFromAnyNode(RedBlackBinaryTree.Node<Integer> root) {
         int count = 0;
         while (root != null && root.data != null) {
-            if (root.color == BLACK) {
+            if (root.isBlack())
                 count++;
-            }
             root = root.right;
         }
         return count;
@@ -162,7 +158,6 @@ public class RedBlackBinaryTreeTest {
     }
 
     @Test
-        //testar att ta bort roten
     void testRemoveRoot() {
         assertTrue(tree.remove(4));
         assertEquals(5, tree.size());
@@ -175,7 +170,6 @@ public class RedBlackBinaryTreeTest {
     }
 
     @Test
-        //testar att ta bort nod med två barn
     void testRemoveExistingMiddleItemWithTwoChildren() {
         assertTrue(tree.add(7));
         assertTrue(tree.remove(6));
@@ -189,7 +183,6 @@ public class RedBlackBinaryTreeTest {
     }
 
     @Test
-        //testar att ta bort ExistingMiddleItemWithEmptyLeftChild
     void testRemoveExistingMiddleItemWithEmptyLeftChild() {
         assertTrue(tree.remove(5));
         assertEquals(5, tree.size());
@@ -201,7 +194,6 @@ public class RedBlackBinaryTreeTest {
     }
 
     @Test
-        //testar att ta bort ExistingMiddleItemWithEmptyLeftChild
     void testRemoveExistingMiddleItemWithEmptyRightChild() {
         assertTrue(tree.add(8));
         assertTrue(tree.add(7));
@@ -216,25 +208,26 @@ public class RedBlackBinaryTreeTest {
                 "(7: BLACK, Parent: 6, Left: nil, Right: nil)]", tree.toString());
     }
 
-    //funkar som binärt träd än så länge men balancering för delete måste fixas
+
     @Test
     void testRandomAddAndRemove() {
         Random rnd = new Random();
 
-        SortedSet<Integer> oracle = new TreeSet<Integer>();
+        SortedSet<Integer> oracle = new TreeSet<>();
         for (int n = 1; n <= 6; n++)
             oracle.add(n);
 
         for (int n = 0; n < 1000; n++) {
-            int toAdd = rnd.nextInt(10);
+            int toAdd = rnd.nextInt(100);
             assertEquals(oracle.add(toAdd), tree.add(toAdd));
-            int toRemove = rnd.nextInt(10);
+            int toRemove = rnd.nextInt(100);
             assertEquals(oracle.remove(toRemove), tree.remove(toRemove));
-            int checkExists = rnd.nextInt(10);
+            int checkExists = rnd.nextInt(100);
             assertEquals(oracle.contains(checkExists), tree.contains(checkExists));
             assertEquals(oracle.size(), tree.size());
             assertEquals(oracle.first(), tree.first());
             assertEquals(oracle.last(), tree.last());
+            verifyRedBlackRules(tree);
             // assertEquals(oracle.toString(), tree.toString());
         }
     }
@@ -259,6 +252,30 @@ public class RedBlackBinaryTreeTest {
         assertEquals(6, tree.last());
     }
 
+    @Test
+    void testHigher() {
+        assertEquals(6, tree.higher(5));
+        assertTrue(tree.remove(6));
+        assertNull(tree.higher(5));
+        assertEquals(2, tree.higher(1));
+        assertEquals(3, tree.higher(2));
+        assertEquals(4, tree.higher(3));
+        assertEquals(5, tree.higher(4));
+
+    }
+
+
+    @Test
+    void testLower() {
+        assertTrue(tree.add(0));
+        assertEquals(1, tree.lower(2));
+        assertTrue(tree.remove(1));
+        //assertNull(tree.lower(2));
+        assertEquals(5, tree.lower(6));
+        assertEquals(4, tree.lower(5));
+        assertEquals(3, tree.lower(4));
+        assertEquals(2, tree.lower(3));
+    }
 
     @Test
     void testOtherType() {
@@ -371,15 +388,14 @@ public class RedBlackBinaryTreeTest {
         assertEquals(4, i.next());
         assertEquals(5, i.next());
         i.remove();
-        System.out.println(tree);
-        //System.out.println(list.toString());
+
         assertEquals(3, tree.size());
         assertEquals(2, tree.first());
         assertEquals(6, i.next());
         i.remove();
         assertEquals(2, tree.size());
         assertEquals(4, tree.last());
-        //assertEquals("Fourth", list.get(1));
+
     }
 
     @Test
@@ -394,18 +410,20 @@ public class RedBlackBinaryTreeTest {
         i.remove();
         assertEquals(4, tree.size());
         assertEquals(5, tree.last());
-        //assertEquals(4, list.get(1));
+
         assertEquals(3, i.next());
         assertEquals(2, i.next());
         i.remove();
-        //System.out.println(tree.toString());
+
         assertEquals(3, tree.size());
         assertEquals(5, tree.last());
         assertEquals(1, i.next());
         i.remove();
 
         assertEquals(2, tree.size());
+
         assertEquals(3, tree.first());
+
         //assertEquals("Fourth", list.get(1));
     }
 
@@ -422,39 +440,39 @@ public class RedBlackBinaryTreeTest {
         Iterator<Integer> i = tree.iterator();
         i.next();
         i.remove();
-        assertThrows(IllegalStateException.class, () -> {
-            i.remove();
-        });
+        assertThrows(IllegalStateException.class, i::remove);
     }
 
     @Test
     public void testRemoveAllElementsOnIterator() {
         Iterator<Integer> i = tree.iterator();
-        while (i.hasNext()){
-            i.next();
-            i.remove();
-        }
-        assertThrows(IllegalStateException.class, () -> {
-            i.remove();
-        });
-        assertTrue(tree.isEmpty());
-        assertEquals(0, tree.size());
+        removeAllElementsFromIterator(i);
+
+        tree.add(2);
+        tree.add(4);
+        tree.add(7);
+
+        i = tree.iterator();
+        removeAllElementsFromIterator(i);
 
     }
 
     @Test
     public void testRemoveAllElementsOnDescendingIterator() {
         Iterator<Integer> i = tree.descendingIterator();
+        removeAllElementsFromIterator(i);
+
+    }
+
+    void removeAllElementsFromIterator(Iterator<Integer> i){
         while (i.hasNext()){
             i.next();
             i.remove();
         }
-        assertThrows(IllegalStateException.class, () -> {
-            i.remove();
-        });
+        assertThrows(IllegalStateException.class, i::remove);
+        assertThrows(NoSuchElementException.class, i::next);
         assertTrue(tree.isEmpty());
         assertEquals(0, tree.size());
-
     }
 
 

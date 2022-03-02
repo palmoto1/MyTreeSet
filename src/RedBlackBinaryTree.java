@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
  * @author August Johnson Palm
  */
 
+//TODO: javadocs, implement relevant methods, clean up
 
 public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iterable<T> {
 
@@ -17,15 +18,14 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
      * Inner Enum representing the red and black color of the nodes
      */
 
-    protected enum Color {
+    enum Color {
         RED, BLACK
     }
 
     /**
      * Inner class representing the nodes in the tree
      */
-
-    protected static class Node<T> {
+    static class Node<T> {
 
         T data;
         Color color;
@@ -86,6 +86,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             return color == Color.RED;
         }
 
+
         Node<T> grandparent() {
             return parent != null ? parent.parent : null;
         }
@@ -109,7 +110,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
                     "Parent: " + (parent == null ? "null" : parent.data) + ", " +
                     "Left: " + (left.data == null ? "nil" : left.data) + ", " +
                     "Right: " + (right.data == null ? "nil" : right.data) + ")";
-
         }
     }
 
@@ -147,6 +147,58 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
     public int size() {
         return size;
     }
+
+
+    private static final boolean LOWER = false;
+    private static final boolean HIGHER = true;
+
+
+    public T lower(T data) {
+        Node<T> param = new Node<T>(data, nil, nil);
+        Node<T> end = findMinNode(root);
+        if (data.compareTo(end.data) <= 0)
+            return null;
+        return getLowerOrHigher(param, end, LOWER);
+    }
+
+    public T higher(T data) {
+        Node<T> param = new Node<T>(data, nil, nil);
+        Node<T> end = findMaxNode(root);
+        if (data.compareTo(end.data) >= 0)
+            return null;
+        return getLowerOrHigher(param, end, HIGHER);
+    }
+
+    private T getLowerOrHigher(Node<T> param, Node<T> result, boolean higher){
+        Node<T> node = root;
+        while (node != nil){
+
+            if (higher && greaterThan(node, param) && lessThan(node, result))
+                result = node;
+
+            else if (lessThan(node, param) && greaterThan(node, result))
+                result = node;
+
+            if (!equals(param, node))
+                node = lessThan(param, node) ? node.left : node.right;
+            else if (higher)
+                node = node.right;
+            else
+                node = node.left;
+        }
+        return result.data;
+    }
+
+
+    public T floor(T t) {
+        return null;
+    }
+
+    public T ceiling(T t) {
+        return null;
+    }
+
+
 
     public T first() {
         return findMin(root);
@@ -198,11 +250,11 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             //traverse the tree down to the last node or return false if we found node with same value
             while (current != nil) {
                 parent = current;
-                if (node.data.compareTo(current.data) == 0)
+                if (equals(node, current))
                     return false;
-                current = (node.data.compareTo(current.data) < 0) ? current.left : current.right;
+                current = lessThan(node, current) ? current.left : current.right;
             }
-            if (node.data.compareTo(parent.data) < 0)
+            if (lessThan(node, parent))
                 parent.left = node;
             else
                 parent.right = node;
@@ -297,7 +349,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
     }
 
 
-    //TODO: write better how it works
     private boolean delete(T data) {
         if (data == null || isEmpty())
             return false;
@@ -441,7 +492,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         Node<T> node = root;
         while (node != nil && data.compareTo(node.data) != 0)
             node = (data.compareTo(node.data) < 0) ? node.left : node.right;
-
         return node;
     }
 
@@ -473,10 +523,10 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         return current;
     }
 
-    private void swapColors(Node<T> x, Node<T> y) {
-        Color temp = x.color;
-        x.color = y.color;
-        y.color = temp;
+    private void swapColors(Node<T> nodeA, Node<T> nodeB) {
+        Color temp = nodeA.color;
+        nodeA.color = nodeB.color;
+        nodeB.color = temp;
     }
 
     /**
@@ -552,6 +602,18 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             oldRoot.parent.right = newRoot;
     }
 
+    private boolean lessThan(Node<T> node, Node<T> other){
+        return node.data.compareTo(other.data) < 0;
+    }
+
+    private boolean greaterThan(Node<T> node, Node<T> other){
+        return node.data.compareTo(other.data) > 0;
+    }
+
+    private boolean equals(Node<T> node, Node<T> other){
+        return node.data.compareTo(other.data) == 0;
+    }
+
 
     private class RedBlackTreeIterator implements Iterator<T> {
 
@@ -602,13 +664,14 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
             RedBlackBinaryTree.this.remove(descending ? current.nextLargest.data : current.nextSmallest.data);
 
+
             expectedModCount++;
             okToRemove = false;
         }
     }
 
     //only for JUNIT-tests
-    protected Node<T> root() {
+    Node<T> root() {
         return root;
     }
 }
