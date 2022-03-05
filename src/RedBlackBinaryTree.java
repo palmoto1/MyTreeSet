@@ -179,12 +179,10 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             else if (lessThan(node, param) && greaterThan(node, result))
                 result = node;
 
-            if (!equals(param, node))
-                node = lessThan(param, node) ? node.left : node.right;
-            else if (higher)
-                node = node.right;
+            if (equals(param, node))
+                node = !higher ? node.left : node.right;
             else
-                node = node.left;
+                node = lessThan(param, node) ? node.left : node.right;
         }
         return result.data;
     }
@@ -295,18 +293,18 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
             // if the both the parent and uncle is red we balance the tree by recoloring
             if (uncle.isRed()) {
-                insertCase1(node);
+                balanceInsertion1(node);
                 //check if we need further recoloring by checking balanceInsertion at the grandfather which is now red
                 if (!grandParent.isRoot())
                     node = grandParent;
             } else // the uncle is black and rotations and recoloring is needed
-                insertCase2(node);
+                balanceInsertion2(node);
         }
         // making sure that the root stays black
         root.color = Color.BLACK;
     }
 
-    private void insertCase1(Node<T> node) {
+    private void balanceInsertion1(Node<T> node) {
 
         Node<T> grandParent = node.grandparent();
         Node<T> uncle = node.uncle();
@@ -316,7 +314,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         grandParent.recolor();
     }
 
-    private void insertCase2(Node<T> node) {
+    private void balanceInsertion2(Node<T> node) {
         Node<T> grandParent = node.grandparent();
 
         if (node.parent.isLeftChild()) {
@@ -330,9 +328,8 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
             // right rotation and recoloring with grandfather
             rightRotate(grandParent);
-            grandParent.recolor();
 
-        } else if (node.parent.isRightChild()) {
+        } else  {
             // if the node is a left child when parent is a right child we have to double rotate (RL)
             // otherwise we just single rotate (LL)
             if (node.isLeftChild()) {
@@ -343,8 +340,8 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
             // left rotation and recoloring with grandfather
             leftRotate(grandParent);
-            grandParent.recolor();
         }
+        grandParent.recolor();
 
     }
 
@@ -376,7 +373,8 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
                 node.data = toDelete.data;
             }
-            deleteCase1(toDelete); // balance the tree if needed
+
+            balanceDeletion1(toDelete); // balance the tree if needed
 
             //finally delete the node
             if (toDelete.isRoot())
@@ -397,18 +395,11 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         node.nextLargest.nextSmallest = node.nextSmallest;
     }
 
-    private void deleteCase1(Node<T> node) {
-        if (node.isBlack())
-            deleteCase2(node);
-    }
 
-    private void deleteCase2(Node<T> node) {
-        if (!node.isRoot())
-            deleteCase3(node);
+    private void balanceDeletion1(Node<T> node) {
+        if (node.isRed() || node.isRoot())
+            return;
 
-    }
-
-    private void deleteCase3(Node<T> node) {
         Node<T> sibling = node.sibling();
         if (sibling != null) {
             if (sibling.isBlack() && sibling.left.isBlack()
@@ -417,15 +408,15 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
                 if (node.parent.isRed())
                     node.parent.recolor(); // make parent black
                 else
-                    deleteCase2(node.parent); // parent was already black and is now "double black"
+                    balanceDeletion1(node.parent); // parent was already black and is now "double black"
             } else
-                deleteCase4(node);
+                balanceDeletion2(node);
         }
 
     }
 
 
-    private void deleteCase4(Node<T> node) {
+    private void balanceDeletion2(Node<T> node) {
         Node<T> sibling = node.sibling();
         if (sibling != null) {
             if (sibling.isRed()) {
@@ -436,14 +427,14 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
                     leftRotate(node.parent);
                 else if (node.isRightChild())
                     rightRotate(node.parent);
-                deleteCase1(node); //check if further balancing needs to be done
+                balanceDeletion1(node); //check if further balancing needs to be done
             } else
-                deleteCase5(node);
+                balanceDeletion3(node);
 
         }
     }
 
-    private void deleteCase5(Node<T> node) {
+    private void balanceDeletion3(Node<T> node) {
         Node<T> sibling = node.sibling();
         if (sibling != null) {
             // sibling is guaranteed to be black
@@ -459,12 +450,12 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
                 sibling.recolor();
                 rightRotate(sibling);
             }
-            deleteCase6(node);
+            balanceDeletion4(node);
         }
 
     }
 
-    private void deleteCase6(Node<T> node) {
+    private void balanceDeletion4(Node<T> node) {
         Node<T> sibling = node.sibling();
         // sibling is guaranteed to be black and the far child is red
         if (sibling != null) {
