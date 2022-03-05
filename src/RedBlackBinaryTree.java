@@ -260,7 +260,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         } else
             root = node;
         insertUpdateNextNodes(node);
-        balanceInsertion(node);
+        balanceInsertion1(node);
         return true;
     }
 
@@ -285,7 +285,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
 
 
-    private void balanceInsertion(Node<T> node) {
+    private void balanceInsertion1(Node<T> node) {
 
         while (!node.isRoot() && node.isRed() && node.parent.isRed()) {
             Node<T> grandParent = node.grandparent();
@@ -293,18 +293,18 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
             // if the both the parent and uncle is red we balance the tree by recoloring
             if (uncle.isRed()) {
-                balanceInsertion1(node);
+                balanceInsertion2(node);
                 //check if we need further recoloring by checking balanceInsertion at the grandfather which is now red
                 if (!grandParent.isRoot())
                     node = grandParent;
             } else // the uncle is black and rotations and recoloring is needed
-                balanceInsertion2(node);
+                balanceInsertion3(node);
         }
         // making sure that the root stays black
         root.color = Color.BLACK;
     }
 
-    private void balanceInsertion1(Node<T> node) {
+    private void balanceInsertion2(Node<T> node) {
 
         Node<T> grandParent = node.grandparent();
         Node<T> uncle = node.uncle();
@@ -314,7 +314,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         grandParent.recolor();
     }
 
-    private void balanceInsertion2(Node<T> node) {
+    private void balanceInsertion3(Node<T> node) {
         Node<T> grandParent = node.grandparent();
 
         if (node.parent.isLeftChild()) {
@@ -366,6 +366,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
                 }
 
             } else { // node has at least one child
+                
                 if (node.left != nil)
                     toDelete = node.left;
                 else if (node.right != nil)
