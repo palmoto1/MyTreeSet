@@ -11,8 +11,6 @@ import org.junit.jupiter.api.*;
  */
 
 
-//TODO: add more tests
-
 public class RedBlackBinaryTreeTest {
 
     private static final RedBlackBinaryTree.Color BLACK = RedBlackBinaryTree.Color.BLACK;

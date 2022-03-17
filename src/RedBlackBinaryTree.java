@@ -4,7 +4,7 @@ import java.util.NoSuchElementException;
 
 
 /**
- * Implementation of a Red-Black Binary Tree
+ * My implementation of a Red-Black Binary Tree
  *
  * @author August Johnson Palm
  */
@@ -55,7 +55,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         }
 
 
-        // Shifts the color of to node from red to black or vice versa
         void recolor() {
             color = (color == Color.RED) ? Color.BLACK : Color.RED;
         }
@@ -169,9 +168,9 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         return getLowerOrHigher(param, end, HIGHER);
     }
 
-    private T getLowerOrHigher(Node<T> param, Node<T> result, boolean higher){
+    private T getLowerOrHigher(Node<T> param, Node<T> result, boolean higher) {
         Node<T> node = root;
-        while (node != nil){
+        while (node != nil) {
 
             if (higher && greaterThan(node, param) && lessThan(node, result))
                 result = node;
@@ -195,7 +194,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
     public T ceiling(T t) {
         return null;
     }
-
 
 
     public T first() {
@@ -235,6 +233,13 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
     }
 
 
+    /**
+     * Inserts a node into the tree by traversing to its potential parent node
+     * Calls method for ensuring balance of the tree as well as updating links to reference nodes used by the iterator
+     *
+     * @param data the data to be inserted
+     * @return false if the data is null or if it is already in the tree and true if insertion was successful*/
+
     private boolean insert(T data) {
         if (data == null)
             return false;
@@ -264,6 +269,11 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         return true;
     }
 
+    /**
+     * Updates references to the next smallest and next largest node after an insertion.
+     *
+     * @param node the newly inserted node
+     * */
 
     private void insertUpdateNextNodes(Node<T> node) {
         if (node.isRoot()) {
@@ -284,6 +294,13 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
     }
 
 
+    /**
+     * Handling the situation after an insertion when a node is red as well as its parent.
+     * If the nodes uncle also is red then it will recolor the nodes parent, uncle and grandparent and checking for
+     * further imbalance by checking the grandparent.
+     * If the uncle is black instead it will call to another method handling that case
+     *
+     * @param node the newly inserted node*/
 
     private void balanceInsertion1(Node<T> node) {
 
@@ -304,6 +321,13 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         root.color = Color.BLACK;
     }
 
+    /**
+     * Recolors the nodes parent, uncle and grandparent and checking for
+     * further imbalance by checking the grandparent.
+     * The parent and uncle becomes black, the grandparent becomes red
+     *
+     * @param node the newly inserted node*/
+
     private void balanceInsertion2(Node<T> node) {
 
         Node<T> grandParent = node.grandparent();
@@ -313,6 +337,18 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         uncle.recolor();
         grandParent.recolor();
     }
+
+    /**
+     * Handling the situation after an insertion when a node is red as well as its parent but the uncle is black.
+     * Checks if the parent is a left or right child and as well as the newly inserted node.
+     * Does single or double rotations depending on the relations described above. Double rotations
+     * will be done by first rotate the parent node away from its child. Then the grandparent will rotate
+     * away from the parent.
+     * Recolors the inserted node if a double rotation was made, otherwise the parent is recolored instead,
+     * making one of them black.
+     * Grandparent is recolored in both situations, making it red.
+     *
+     * @param node the newly inserted node*/
 
     private void balanceInsertion3(Node<T> node) {
         Node<T> grandParent = node.grandparent();
@@ -329,7 +365,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             // right rotation and recoloring with grandfather
             rightRotate(grandParent);
 
-        } else  {
+        } else {
             // if the node is a left child when parent is a right child we have to double rotate (RL)
             // otherwise we just single rotate (LL)
             if (node.isLeftChild()) {
@@ -345,6 +381,21 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
     }
 
+
+    /**
+     * Deletes a node from the tree. Depending on the number of children the node handles the deletion differently.
+     * If the node has two, non-nil children we copy the data from its maximum predecessor and then making
+     * the same operation on the predecessor until the node to be deleted is a leaf node.
+     * If the node has one child we simply copy the data from its only child due to the fact that the balance
+     * of the tree ensures that the only child will be a leaf node
+     * If the node has no child we can simply cut it of.
+     *
+     * Calls on methods rebalancing the tree if the node to be deleted is black. It can be seen as carrying
+     * an extra black color making it "double black". We need to get rid of this to ensure balance in the tree.
+     *
+     * @param data the data to be deleted
+     * @return false if the data is null, if the tree was empty or if the data was not in the tree. Otherwise
+     * true if the removal was successful. */
 
     private boolean delete(T data) {
         if (data == null || isEmpty())
@@ -366,7 +417,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
                 }
 
             } else { // node has at least one child
-                
+
                 if (node.left != nil)
                     toDelete = node.left;
                 else if (node.right != nil)
@@ -391,11 +442,29 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
     }
 
+
+    /**
+     * Updates references to the next smallest and next largest node after an deletion.
+     *
+     * @param node the newly deleted node
+     * */
     private void deleteUpdateNextNodes(Node<T> node) {
         node.nextSmallest.nextLargest = node.nextLargest;
         node.nextLargest.nextSmallest = node.nextSmallest;
     }
 
+
+
+    /**
+     * Aborts if the deleted node is red or is the root since no balancing is needed other when the
+     * deleted node is black.
+     * Otherwise it handles the case when the nodes sibling is black as well as the siblings children
+     * (including nil-nodes). Makes the sibling red and the parent black if it is red making the tree balanced.
+     * If the parent was black the method is called recursively on the parent since now the parent is "double black"
+     * and further rebalancing is needed.
+     * If any of the sibling and its children were red another balancing method is called instead.
+     *
+     * @param node the "double black" node needing balance*/
 
     private void balanceDeletion1(Node<T> node) {
         if (node.isRed() || node.isRoot())
@@ -416,6 +485,14 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
     }
 
+    /**
+     * Handles the case when the sibling is red. If it is red then the parent and sibling swap colors
+     * making the sibling black and parent red. Then it rotates the nodes parent towards the "double black"
+     * node.
+     * Calls to the first case to check for further balancing.
+     * If the sibling was not red another method is called.
+     *
+     * @param node the "double black" node needing balance*/
 
     private void balanceDeletion2(Node<T> node) {
         Node<T> sibling = node.sibling();
@@ -434,6 +511,12 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
         }
     }
+    /**
+     * Handles the case when the sibling is black, its child nearest the "double black" node is red and the
+     * farthest child is black. Makes the near child of the sibling black and the sibling red.
+     * Rotates the sibling away from the "double black" node and calls another method handling another case
+     *
+     * @param node the "double black" node needing balance*/
 
     private void balanceDeletion3(Node<T> node) {
         Node<T> sibling = node.sibling();
@@ -455,6 +538,13 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         }
 
     }
+
+    /**
+     * Handles the case when the sibling is black, its child furthest the "double black" node is red and the
+     * nearest child is black. Swaps the colors of the sibling and the parent and rotates the parent in the
+     * "double black" nodes direction. The siblings red child becomes black. The tree is now rebalanced.
+     *
+     * @param node the "double black" node needing balance*/
 
     private void balanceDeletion4(Node<T> node) {
         Node<T> sibling = node.sibling();
@@ -594,15 +684,15 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             oldRoot.parent.right = newRoot;
     }
 
-    private boolean lessThan(Node<T> node, Node<T> other){
+    private boolean lessThan(Node<T> node, Node<T> other) {
         return node.data.compareTo(other.data) < 0;
     }
 
-    private boolean greaterThan(Node<T> node, Node<T> other){
+    private boolean greaterThan(Node<T> node, Node<T> other) {
         return node.data.compareTo(other.data) > 0;
     }
 
-    private boolean equals(Node<T> node, Node<T> other){
+    private boolean equals(Node<T> node, Node<T> other) {
         return node.data.compareTo(other.data) == 0;
     }
 
@@ -626,7 +716,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
                 current = nil;
             else
                 current = descending ? findMaxNode(root) : findMinNode(root);
-
         }
 
         @Override

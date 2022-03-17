@@ -20,7 +20,13 @@ public class Main {
 
         tree.add(10);
 
-        System.out.println(tree.higher(20));
+        tree.add(5);
+
+        tree.add(1);
+
+        System.out.println(tree);
+
+       // System.out.println(tree.higher(20));
 
         TreeSet<Integer> oracle = new TreeSet<>();
 
