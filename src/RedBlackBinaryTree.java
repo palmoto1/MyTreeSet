@@ -9,7 +9,6 @@ import java.util.NoSuchElementException;
  * @author August Johnson Palm
  */
 
-//TODO: javadocs, implement relevant methods, clean up
 
 public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iterable<T> {
 
@@ -119,6 +118,11 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
     private int size = 0;
     private int modCount = 0;
 
+    /**
+     * Inserts an element into the tree
+     *
+     * @param data the data to be inserted
+     * @return false if the size was not changed and true if the size incremented proposing that the insertion was successful or not*/
 
     public boolean add(T data) {
         int originalSize = size();
@@ -128,6 +132,11 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         }
         return size() > originalSize;
     }
+    /**
+     * Deletes an element from the tree
+     *
+     * @param data the data to be removed
+     * @return false if the size was not changed and true if the size decremented proposing that the removal was successful or not*/
 
     public boolean remove(T data) {
         int originalSize = size();
@@ -157,6 +166,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         Node<T> end = findMinNode(root);
         if (data.compareTo(end.data) <= 0)
             return null;
+
         return getLowerOrHigher(param, end, LOWER);
     }
 
@@ -185,16 +195,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         }
         return result.data;
     }
-
-
-    public T floor(T t) {
-        return null;
-    }
-
-    public T ceiling(T t) {
-        return null;
-    }
-
 
     public T first() {
         return findMin(root);
@@ -627,6 +627,9 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             buildString(builder, root.right);
         }
     }
+
+    /**
+     * Handles rotation of a node by */
 
     private void rightRotate(Node<T> oldRoot) {
         Node<T> newRoot = oldRoot.left;
