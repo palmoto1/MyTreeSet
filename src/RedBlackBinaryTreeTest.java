@@ -207,6 +207,7 @@ public class RedBlackBinaryTreeTest {
     }
 
 
+    //debug to see if it works
     @Test
     void testRandomAddAndRemove() {
         Random rnd = new Random();
@@ -226,7 +227,7 @@ public class RedBlackBinaryTreeTest {
             assertEquals(oracle.first(), tree.first());
             assertEquals(oracle.last(), tree.last());
             verifyRedBlackRules(tree);
-            // assertEquals(oracle.toString(), tree.toString());
+             //assertEquals(oracle.toString(), tree.toString());
         }
     }
 
