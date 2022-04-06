@@ -43,7 +43,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             this.data = data;
             this.left = left;
             this.right = right;
-            color = Color.RED;
+            this.color = Color.RED;
         }
 
 
@@ -91,14 +91,17 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
         Node<T> uncle() {
             Node<T> grandparent = grandparent();
+
             if (grandparent == null)
                 return null;
+
             return parent == grandparent.left ? grandparent.right : grandparent.left;
         }
 
         Node<T> sibling() {
             if (parent == null)
                 return null;
+
             return this == parent.left ? parent.right : parent.left;
         }
 
@@ -127,6 +130,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
     public boolean add(T data) {
         int originalSize = size();
+
         if (insert(data)) {
             size++;
             modCount++;
@@ -143,6 +147,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
     public boolean remove(T data) {
         int originalSize = size();
+
         if (delete(data)) {
             size--;
             modCount++;
@@ -167,6 +172,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
     public T lower(T data) {
         Node<T> param = new Node<T>(data, nil, nil);
         Node<T> end = findMinNode(root);
+
         if (data.compareTo(end.data) <= 0)
             return null;
 
@@ -176,8 +182,10 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
     public T higher(T data) {
         Node<T> param = new Node<T>(data, nil, nil);
         Node<T> end = findMaxNode(root);
+
         if (data.compareTo(end.data) >= 0)
             return null;
+
         return getLowerOrHigher(param, end, HIGHER);
     }
 
@@ -187,7 +195,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
             if (higher && greaterThan(node, param) && lessThan(node, result))
                 result = node;
-
             else if (lessThan(node, param) && greaterThan(node, result))
                 result = node;
 
@@ -219,11 +226,14 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
     public String toString() {
         StringBuilder builder = new StringBuilder();
+
         if (isEmpty())
             return "[]";
+
         builder.append("[");
         buildString(builder, root);
         builder.append("]");
+
         return builder.toString();
     }
 
@@ -251,14 +261,17 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         Node<T> node = new Node<>(data, nil, nil);
         if (isEmpty())
             root = node; // if the tree is empty we make the inserted node the root
+
         else {
             Node<T> current = root;
             Node<T> parent = nil;
             //traverse the tree down to the last node or return false if we found node with same value
             while (current != nil) {
                 parent = current;
+
                 if (equals(node, current))
                     return false;
+
                 current = lessThan(node, current) ? current.left : current.right;
             }
             if (lessThan(node, parent))
@@ -268,7 +281,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
             node.parent = parent;
         }
-
         insertUpdateNextNodes(node);
         balanceInsertion1(node);
 
@@ -310,7 +322,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
      */
 
     private void balanceInsertion1(Node<T> node) {
-
         while (!node.isRoot() && node.isRed() && node.parent.isRed()) {
             Node<T> grandParent = node.grandparent();
             Node<T> uncle = node.uncle();
@@ -318,10 +329,12 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             // if the both the parent and uncle is red we balance the tree by recoloring
             if (uncle.isRed()) {
                 balanceInsertion2(node);
+
                 //check if we need further recoloring by checking balanceInsertion at the grandfather which is now red
                 if (!grandParent.isRoot())
                     node = grandParent;
-            } else // the uncle is black and rotations and recoloring is needed
+            }
+            else // the uncle is black and rotations and recoloring is needed
                 balanceInsertion3(node);
         }
         // making sure that the root stays black
@@ -337,7 +350,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
      */
 
     private void balanceInsertion2(Node<T> node) {
-
         Node<T> grandParent = node.grandparent();
         Node<T> uncle = node.uncle();
 
@@ -368,7 +380,8 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             if (node.isRightChild()) {
                 leftRotate(node.parent); // left rotation with parent
                 node.recolor();
-            } else
+            }
+            else
                 node.parent.recolor();
 
             // right rotation and recoloring with grandfather
@@ -380,9 +393,9 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             if (node.isLeftChild()) {
                 rightRotate(node.parent); // right rotation with parent
                 node.recolor();
-            } else
+            }
+            else
                 node.parent.recolor();
-
             // left rotation and recoloring with grandfather
             leftRotate(grandParent);
         }
@@ -418,7 +431,6 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             deleteUpdateNextNodes(node); // update nextSmallest and nextLargest link
             Node<T> toDelete = node;
             if (node.left != nil && node.right != nil) { // node to be removed has two children
-
                 // traverse the to find the node to be cut of the tree aswell as copy data upwards
                 while (node.left != nil) {
                     toDelete = findMaxNode(node.left);
@@ -430,6 +442,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
                 if (node.left != nil)
                     toDelete = node.left;
+
                 else if (node.right != nil)
                     toDelete = node.right;
 
@@ -441,6 +454,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             //finally delete the node
             if (toDelete.isRoot())
                 root = null;
+
             else {  //node is guaranteed to be a leaf at this point)
                 cutOf(toDelete);
                 //make sure the root stays black
@@ -482,14 +496,18 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
 
         Node<T> sibling = node.sibling();
         if (sibling != null) {
+
             if (sibling.isBlack() && sibling.left.isBlack()
                     && sibling.right.isBlack()) {
                 sibling.recolor(); //make sibling red
+
                 if (node.parent.isRed())
                     node.parent.recolor(); // make parent black
+
                 else
                     balanceDeletion1(node.parent); // parent was already black and is now "double black"
-            } else
+            }
+            else
                 balanceDeletion2(node);
         }
 
@@ -508,16 +526,20 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
     private void balanceDeletion2(Node<T> node) {
         Node<T> sibling = node.sibling();
         if (sibling != null) {
+
             if (sibling.isRed()) {
 
                 swapColors(node.parent, sibling); // sibling becomes black and parent becomes red
 
                 if (node.isLeftChild())
                     leftRotate(node.parent);
+
                 else if (node.isRightChild())
                     rightRotate(node.parent);
+
                 balanceDeletion1(node); //check if further balancing needs to be done
-            } else
+            }
+            else
                 balanceDeletion3(node);
 
         }
@@ -536,13 +558,11 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         if (sibling != null) {
             // sibling is guaranteed to be black
             if (sibling.isLeftChild() && sibling.left.isBlack() && sibling.right.isRed()) {
-
                 sibling.right.recolor();
                 sibling.recolor();
                 leftRotate(sibling);
 
             } else if (sibling.isRightChild() && sibling.right.isBlack() && sibling.left.isRed()) {
-
                 sibling.left.recolor();
                 sibling.recolor();
                 rightRotate(sibling);
@@ -570,7 +590,8 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
             if (node.isLeftChild()) {
                 leftRotate(node.parent);
                 sibling.right.recolor(); // make far child black
-            } else if (node.isRightChild()) {
+            }
+            else if (node.isRightChild()) {
                 rightRotate(node.parent);
                 sibling.left.recolor(); // make far child black
             }
@@ -588,6 +609,7 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         Node<T> node = root;
         while (node != nil && data.compareTo(node.data) != 0)
             node = (data.compareTo(node.data) < 0) ? node.left : node.right;
+
         return node;
     }
 
@@ -695,10 +717,11 @@ public class RedBlackBinaryTree<T extends Comparable<? super T>> implements Iter
         if (oldRoot.isRoot())
             root = newRoot;
 
-            //if the root is a left child the new root will be a left child
+        //if the root is a left child the new root will be a left child
         else if (oldRoot.isLeftChild()) {
             oldRoot.parent.left = newRoot;
-        } else //the root is a right child and the new root will be a right child
+        }
+        else //the root is a right child and the new root will be a right child
             oldRoot.parent.right = newRoot;
     }
 
