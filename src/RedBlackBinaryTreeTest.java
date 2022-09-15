@@ -11,6 +11,7 @@ import org.junit.jupiter.api.*;
  */
 
 
+
 public class RedBlackBinaryTreeTest {
 
     private static final RedBlackBinaryTree.Color BLACK = RedBlackBinaryTree.Color.BLACK;
@@ -44,11 +45,11 @@ public class RedBlackBinaryTreeTest {
 
     void verifyRedBlackRules(RedBlackBinaryTree<Integer> tree) {
         verifyRootIsBlack(tree);
-        assertDoesNotThrow(() -> verifyNodesAreEitherRedOrBlack(tree.root()));
+        assertDoesNotThrow(() -> verifyNodesAreRedOrBlack(tree.root()));
         assertDoesNotThrow(() -> verifyRedNodesHaveOnlyBlackChildren(tree.root()));
-        verifySameNumberOfBlackNodesDownToMinAndMaxNodes(tree);
-        assertDoesNotThrow(() -> verifySameNumberOfBlackNodesDownToAllNilNodes(tree.root(),
-                numberOfBlackNodesToMaxNodeFromAnyNode(tree.root()), 0));
+        int expectedBlackNodes = verifySameNumberOfBlackNodesToMinAndMaxNodes(tree);
+        assertDoesNotThrow(() -> verifySameNumberOfBlackNodesToNilNodes(tree.root(),
+                expectedBlackNodes, 0));
     }
 
     void verifyRootIsBlack(RedBlackBinaryTree<Integer> tree) {
@@ -57,12 +58,12 @@ public class RedBlackBinaryTreeTest {
     }
 
 
-    void verifyNodesAreEitherRedOrBlack(RedBlackBinaryTree.Node<Integer> root) throws IllegalStateException {
+    void verifyNodesAreRedOrBlack(RedBlackBinaryTree.Node<Integer> root) throws IllegalStateException {
         if (root != null && root.data != null) {
             if (!root.isBlack() && !root.isRed())
                 throw new IllegalStateException("Wrong colors in tree");
-            verifyNodesAreEitherRedOrBlack(root.left);
-            verifyNodesAreEitherRedOrBlack(root.right);
+            verifyNodesAreRedOrBlack(root.left);
+            verifyNodesAreRedOrBlack(root.right);
         }
     }
 
@@ -78,21 +79,26 @@ public class RedBlackBinaryTreeTest {
         }
     }
 
-    void verifySameNumberOfBlackNodesDownToMinAndMaxNodes(RedBlackBinaryTree<Integer> tree) {
-        assertEquals(numberOfBlackNodesToMaxNodeFromAnyNode(tree.root()), numberOfBlackNodesToMinNodeFromAnyNode(tree.root()));
+    int verifySameNumberOfBlackNodesToMinAndMaxNodes(RedBlackBinaryTree<Integer> tree) {
+        int toMaxNode = numberOfBlackNodesToMaxNode(tree.root());
+        int toMinNode = numberOfBlackNodesToMinNode(tree.root());
+
+        assertEquals(toMaxNode, toMinNode);
+
+        return toMaxNode;
     }
 
-    void verifySameNumberOfBlackNodesDownToAllNilNodes(RedBlackBinaryTree.Node<Integer> root, int expected, int count) throws IllegalStateException {
+    void verifySameNumberOfBlackNodesToNilNodes(RedBlackBinaryTree.Node<Integer> root, int expected, int count) throws IllegalStateException {
         if (root != null && root.data != null) {
             if (root.isBlack())
                 count++;
-            verifySameNumberOfBlackNodesDownToAllNilNodes(root.left, expected, count);
-            verifySameNumberOfBlackNodesDownToAllNilNodes(root.right, expected, count);
+            verifySameNumberOfBlackNodesToNilNodes(root.left, expected, count);
+            verifySameNumberOfBlackNodesToNilNodes(root.right, expected, count);
         } else if (expected != count)
                 throw new IllegalStateException("Wrong number of black nodes down to nil");
     }
 
-    int numberOfBlackNodesToMinNodeFromAnyNode(RedBlackBinaryTree.Node<Integer> root) {
+    int numberOfBlackNodesToMinNode(RedBlackBinaryTree.Node<Integer> root) {
         int count = 0;
         while (root != null && root.data != null) {
             if (root.isBlack())
@@ -100,10 +106,9 @@ public class RedBlackBinaryTreeTest {
             root = root.left;
         }
         return count;
-
     }
 
-    int numberOfBlackNodesToMaxNodeFromAnyNode(RedBlackBinaryTree.Node<Integer> root) {
+    int numberOfBlackNodesToMaxNode(RedBlackBinaryTree.Node<Integer> root) {
         int count = 0;
         while (root != null && root.data != null) {
             if (root.isBlack())
